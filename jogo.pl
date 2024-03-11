@@ -26,8 +26,21 @@
 % |4   6|  é representado por bloco(3, 6, 7, 4).
 % |  7  |
 %
-% Dizemos que um bloco está em posição adequada se ...
-% TODO: completar a descrição!
+% Dizemos que um bloco está em posição adequada se os valores das bordas
+% correspondem aos valores dos blocos adjacentes. Por exemplo, o bloco
+% bloco(3, 6, 7, 4) está em posição adequada no jogo acima.
+
+% Caso não seja adequado, o bloco pode ser rotacionado para que fique adequado
+% em relação aos blocos adjacentes. Por exemplo, o bloco acima
+% 
+% pode ser rotacionado para
+%
+% |  4  |
+% |7   3|  que é representado por bloco(4, 3, 7, 6).
+% |  6  |
+%
+% e estará em posição adequada no jogo acima.
+
 
 
 
@@ -242,40 +255,59 @@ test(j7x7, [nondet, Blocos = Final]) :-
 :- end_tests(grande).
 
 
-%% blocos_adequados(?Jogo) is semidet
+%% blocos_adequados(jogo(+L, +C, ?Blocos)) is semidet
 %
 %  Verdadeiro se Jogo é uma estrutura jogo(L, C, Blocos), e todos os blocos de
-%  Blocos estão em posições adequadas.
+%  Blocos estão em posições adequadas. Ou seja, verdadeiro caso todos os blocos
+%  da lista Blocos de um jogo LxC estejam na posicao correta
 %
-%  TODO: adicionar os exemplos
+%Exemplos blocos adequados
+:- begin_tests(blocos_adequados).
+test(blocos_adequados) :-
+    blocos_adequados(jogo(3,3,[bloco(7, 3, 4, 9),
+                               bloco(3, 4, 8, 3),
+                               bloco(7, 4, 2, 4),
+                               bloco(4, 4, 8, 5),
+                               bloco(8, 3, 6, 4),
+                               bloco(2, 2, 7, 3),
+                               bloco(8, 9, 1, 3),
+                               bloco(6, 6, 6, 9),
+                               bloco(7, 8, 5, 6)])).
+
+test(blocos_adequados_fail, [fail]) :-
+    blocos_adequados(jogo(3,3,[bloco(2,0,2,2),
+                               bloco(2,2,2,2),
+                               bloco(2,2,2,2),
+                               bloco(2,2,2,2),
+                               bloco(1,2,3,4),
+                               bloco(1,1,1,1),
+                               bloco(2,2,2,2),
+                               bloco(2,2,2,2),
+                               bloco(2,211,2,2)])).
+:-end_tests(blocos_adequados).
 
 blocos_adequados(jogo(L, C, Blocos)) :-
     bloco_adequado(jogo(L, C, Blocos), 1).
 
-%% blocos_adequados(?Jogo, ?P) is semidet
-%
-%  Verdadeiro se Jogo é uma estrutura jogo(L, C, Blocos), e o bloco na posição
-%  P de Blocos está em uma posição adequada.
-%
-%  TODO: adicionar os exemplos
 
-bloco_adequado(jogo(L, C, Blocos), P) :-
-    P =< L * C,
-    Li is (P - 1) // C + 1,
-    Ci is (P - 1) mod C + 1,
-    PosicaoCima is P - C,
-    PosicaoBaixo is P + C,
-    PosicaoDireita is P + 1,
-    PosicaoEsquerda is P - 1,
-    nth1(P, Blocos, bloco(Cima, Direita, Baixo, Esquerda)),
-    (Ci = 1; nth1(PosicaoEsquerda, Blocos, bloco(_, Esquerda, _, _))),
-    (Ci = C; nth1(PosicaoDireita, Blocos, bloco(_, _, _, Direita))),
-    (Li = 1; nth1(PosicaoCima, Blocos, bloco(_, _, Cima, _))),
-    (Li = L; nth1(PosicaoBaixo, Blocos, bloco(Baixo, _, _, _))),
-    ( length(Blocos, P);
-      bloco_adequado(jogo(L, C, Blocos), PosicaoDireita)), !.
 
-%Exemplos
+
+%% bloco_adequado(jogo(+L, +C, ?Blocos), +P) is semidet
+% 
+% Verdadeiro caso os blocos da posicao P em diante estejam em uma 
+% posicao adequda para um jogo com L linhas, C colunas e sendo Blocos
+% a lista de blocos, ou seja, se as bordas dos blocos vizinhos forem correspondentes
+% com as bordas de P
+%
+%
+%          __3__
+%         I  3  I
+%       1 I1   2I 2
+%         I  4  I
+%         -------
+%            4
+
+%Exemplos bloco adequado
 :- begin_tests(bloco_adequado).
 
 test(bloco_adequado_meio) :-
@@ -370,28 +402,18 @@ test(bloco_inadequado_meio_ultima_coluna, [fail]) :-
 
 :- end_tests(bloco_adequado).
 
-%Exemplos
-
-:- begin_tests(blocos_adequados).
-test(blocos_adequados) :-
-    blocos_adequados(jogo(3,3,[bloco(7, 3, 4, 9),
-                               bloco(3, 4, 8, 3),
-                               bloco(7, 4, 2, 4),
-                               bloco(4, 4, 8, 5),
-                               bloco(8, 3, 6, 4),
-                               bloco(2, 2, 7, 3),
-                               bloco(8, 9, 1, 3),
-                               bloco(6, 6, 6, 9),
-                               bloco(7, 8, 5, 6)])).
-
-test(blocos_adequados_fail, [fail]) :-
-    blocos_adequados(jogo(3,3,[bloco(2,0,2,2),
-                               bloco(2,2,2,2),
-                               bloco(2,2,2,2),
-                               bloco(2,2,2,2),
-                               bloco(1,2,3,4),
-                               bloco(1,1,1,1),
-                               bloco(2,2,2,2),
-                               bloco(2,2,2,2),
-                               bloco(2,211,2,2)])).
-:-end_tests(blocos_adequados).
+bloco_adequado(jogo(L, C, Blocos), P) :-
+    P =< L * C,
+    Li is (P - 1) // C + 1,
+    Ci is (P - 1) mod C + 1,
+    PosicaoCima is P - C,
+    PosicaoBaixo is P + C,
+    PosicaoDireita is P + 1,
+    PosicaoEsquerda is P - 1,
+    nth1(P, Blocos, bloco(Cima, Direita, Baixo, Esquerda)),
+    (Ci = 1; nth1(PosicaoEsquerda, Blocos, bloco(_, Esquerda, _, _))),
+    (Ci = C; nth1(PosicaoDireita, Blocos, bloco(_, _, _, Direita))),
+    (Li = 1; nth1(PosicaoCima, Blocos, bloco(_, _, Cima, _))),
+    (Li = L; nth1(PosicaoBaixo, Blocos, bloco(Baixo, _, _, _))),
+    ( length(Blocos, P);
+      bloco_adequado(jogo(L, C, Blocos), PosicaoDireita)), !.
