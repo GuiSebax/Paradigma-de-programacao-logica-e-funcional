@@ -1,8 +1,10 @@
 % vim: set ft=prolog:
 
-% Guilherme Frare Clemente RA: 124349
-
 :- use_module(library(plunit)).
+:- use_module(library(clpfd)).
+
+% Guilherme Frare Clemente
+% RA: 124349
 
 % Um jogo é representado por uma estrutura jogo com 3 argumentos. O primeiro é
 % o número de linhas (L), o segundo o número de colunas (C) e o terceiro uma
@@ -27,21 +29,46 @@
 % |  7  |
 %
 % Dizemos que um bloco está em posição adequada se os valores das bordas
-% correspondem aos valores dos blocos adjacentes. Por exemplo, o bloco
-% bloco(3, 6, 7, 4) está em posição adequada no jogo acima.
-
-% Caso não seja adequado, o bloco pode ser rotacionado para que fique adequado
-% em relação aos blocos adjacentes. Por exemplo, o bloco acima
+% do bloco coincidirem corretamente com os blocos adjacentes na matriz do jogo.
+% As bordas de um bloco são representadas pelos quatro argumentos da estrutura 
+% bloco/4, que representam, respectivamente, os valores da borda superior, direita,
+% inferior e esquerda
 % 
-% pode ser rotacionado para
-%
-% |  4  |
-% |7   3|  que é representado por bloco(4, 3, 7, 6).
-% |  6  |
-%
-% e estará em posição adequada no jogo acima.
-
-
+% 1- Canto Superior Esquerdo (P = 0)
+%   A borda superior do bloco deve coincidir com a borda inferior do bloco abaixo.
+%   A borda esquerda do bloco deve coincidir com a borda direita do bloco à direita.
+% 
+% 2- Canto Superior Direito (P = C - 1)
+%   A borda superior do bloco deve coincidir com a borda inferior do bloco abaixo.
+%   A borda direita do bloco deve coincidir com a borda esquerda do bloco à esquerda.
+% 
+% 3- Canto Inferior Direito (P = L * C - 1)
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
+%   A borda direita do bloco deve coincidir com a borda esquerda do bloco à esquerda.
+% 
+% 4- Canto Inferior Esquerdo (P = L * C - L)
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
+%   A borda esquerda do bloco deve coincidir com a borda direita do bloco à direita.
+% 
+% 5- Bordas na Primeira Linha (0 < P < C - 1)
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
+%   A borda esquerda do bloco deve coincidir com a borda direita do bloco à direita.
+%   A borda direita do bloco deve coincidir com a borda esquerda do bloco à esquerda.
+% 
+% 6- Bordas na Última Linha((L-1) * C < P < L * C - 1)
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
+%   A borda esquerda do bloco deve coincidir com a borda direita do bloco à direita.
+%   A borda direita do bloco deve coincidir com a borda esquerda do bloco à esquerda.
+% 
+% 7- Bordas na Primeira Coluna (P mod C = 0, 0 < P < (L-1) * C)
+%   A borda esquerda do bloco deve coincidir com a borda direita do bloco à direita.
+%   A borda superior do bloco deve coincidir com a borda inferior do bloco abaixo.
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
+% 
+% 8- Bordas na Última Coluna ((P + 1) mod C = 0, C - 1 < P < L * C - 1)
+%   A borda direita do bloco deve coincidir com a borda esquerda do bloco à esquerda.
+%   A borda superior do bloco deve coincidir com a borda inferior do bloco abaixo.
+%   A borda inferior do bloco deve coincidir com a borda superior do bloco acima.
 
 
 %% jogo_solucao(+JogoInicial, ?JogoFinal) is semidet
@@ -54,7 +81,7 @@
 jogo_solucao(JogoInicial, JogoFinal) :-
     jogo(L, C, Blocos) = JogoInicial,
     jogo(L, C, Solucao) = JogoFinal,
-    blocos_adequados(jogo(L, C, Solucao)),
+    blocos_adequados(JogoFinal),
     permutation(Blocos, Solucao).
 
 :- begin_tests(pequeno).
@@ -255,13 +282,12 @@ test(j7x7, [nondet, Blocos = Final]) :-
 :- end_tests(grande).
 
 
-%% blocos_adequados(jogo(+L, +C, ?Blocos)) is semidet
+%% blocos_adequados(?Jogo) is semidet
 %
 %  Verdadeiro se Jogo é uma estrutura jogo(L, C, Blocos), e todos os blocos de
-%  Blocos estão em posições adequadas. Ou seja, verdadeiro caso todos os blocos
-%  da lista Blocos de um jogo LxC estejam na posicao correta
-%
-%Exemplos blocos adequados
+%  Blocos estão em posições adequadas.
+% 
+% Exemplos
 :- begin_tests(blocos_adequados).
 test(blocos_adequados) :-
     blocos_adequados(jogo(3,3,[bloco(7, 3, 4, 9),
@@ -286,28 +312,34 @@ test(blocos_adequados_fail, [fail]) :-
                                bloco(2,211,2,2)])).
 :-end_tests(blocos_adequados).
 
-blocos_adequados(jogo(L, C, Blocos)) :-
-    bloco_adequado(jogo(L, C, Blocos), 1).
+ 
+% Verdadeiro se Blocos é vazio
+blocos_adequados(jogo(_, _, [])).
+
+% Verdadeiro se Blocos possui somente um elemento
+blocos_adequados(jogo(1, 1, _)).
+
+% Verdadeiro se todos os blocos sao adequados
+blocos_adequados(Jogo) :-
+    blocos_adequados(Jogo, 0).
+
+blocos_adequados(Jogo, P) :-
+    jogo(L, C, _) = Jogo,
+    P #>= L * C, !.
+
+blocos_adequados(Jogo, P) :-
+    bloco_adequado(Jogo, P),
+    P0 #= P + 1,
+    blocos_adequados(Jogo, P0).
 
 
-
-
-%% bloco_adequado(jogo(+L, +C, ?Blocos), +P) is semidet
+%% bloco_adequado(?Jogo, ?P) is semidet
+%
+%  Verdadeiro se Jogo é uma estrutura jogo(L, C, Blocos), e o bloco na posição
+%  P de Blocos está em uma posição adequada.
 % 
-% Verdadeiro caso os blocos da posicao P em diante estejam em uma 
-% posicao adequda para um jogo com L linhas, C colunas e sendo Blocos
-% a lista de blocos, ou seja, se as bordas dos blocos vizinhos forem correspondentes
-% com as bordas de P
-%
-%
-%          __3__
-%         I  3  I
-%       1 I1   2I 2
-%         I  4  I
-%         -------
-%            4
+% Exemplos
 
-%Exemplos bloco adequado
 :- begin_tests(bloco_adequado).
 
 test(bloco_adequado_meio) :-
@@ -325,10 +357,6 @@ test(bloco_adequado_canto_direito_superior) :-
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(3,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),3).
 
-test(bloco_adequado_canto_direito_inferior) :-
-    bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
-                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,1,0),
-                             bloco(0,0,0,0),bloco(0,4,0,0),bloco(1,2,3,4)]),9).
 
 test(bloco_adequado_canto_esquerdo_inferior) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
@@ -365,10 +393,6 @@ test(bloco_inadequado_canto_esquerdo_superior, [fail]) :-
                              bloco(3,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),1).
 
-test(bloco_inadequado_canto_direito_superior, [fail]) :-
-    bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(1,2,3,4),
-                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
-                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),3).
 
 test(bloco_inadequado_canto_direito_inferior, [fail]) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
@@ -385,35 +409,113 @@ test(bloco_adequado_meio_primeira_linha, [fail]) :-
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),2).
 
-test(bloco_inadequado_meio_ultima_linha, [fail]) :-
-    bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
-                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
-                             bloco(0,4,0,0),bloco(1,2,3,4),bloco(0,0,0,2)]),8).
 
 test(bloco_inadequado_meio_primeira_coluna, [fail]) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(1,2,3,4),bloco(0,0,0,0),
                              bloco(1,2,3,4),bloco(0,0,0,2),bloco(0,0,0,0),
                              bloco(3,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),2).
 
-test(bloco_inadequado_meio_ultima_coluna, [fail]) :-
-    bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,1,0),
-                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(1,2,3,4),
-                             bloco(0,0,0,0),bloco(0,1,2,3),bloco(3,0,0,0)]),8).
-
 :- end_tests(bloco_adequado).
 
-bloco_adequado(jogo(L, C, Blocos), P) :-
-    P =< L * C,
-    Li is (P - 1) // C + 1,
-    Ci is (P - 1) mod C + 1,
-    PosicaoCima is P - C,
-    PosicaoBaixo is P + C,
-    PosicaoDireita is P + 1,
-    PosicaoEsquerda is P - 1,
-    nth1(P, Blocos, bloco(Cima, Direita, Baixo, Esquerda)),
-    (Ci = 1; nth1(PosicaoEsquerda, Blocos, bloco(_, Esquerda, _, _))),
-    (Ci = C; nth1(PosicaoDireita, Blocos, bloco(_, _, _, Direita))),
-    (Li = 1; nth1(PosicaoCima, Blocos, bloco(_, _, Cima, _))),
-    (Li = L; nth1(PosicaoBaixo, Blocos, bloco(Baixo, _, _, _))),
-    ( length(Blocos, P);
-      bloco_adequado(jogo(L, C, Blocos), PosicaoDireita)), !.
+
+% Verdadeiro se o bloco no canto superior esquerdo de Blocos é adequado 
+% para uma matriz bi-dimensional.
+bloco_adequado(Jogo, 0) :-
+    Jogo = jogo(_, C, Blocos),
+    nth0(1, Blocos, bloco(_, _, _, X)),
+    nth0(C, Blocos, bloco(Y, _, _, _)),
+    nth0(0, Blocos, bloco(_, X, Y, _)), !.
+
+% Verdadeiro se o bloco no canto superior direito de Blocos é adequado
+% para uma matriz bi-dimensional.
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(_, C, Blocos),
+    P #= C - 1,
+    Esquerda #= P - 1,
+    Abaixo #= P + C,
+    nth0(P, Blocos, bloco(_, _, X, Y)),
+    nth0(Esquerda, Blocos, bloco(_, Y, _, _)),
+    nth0(Abaixo, Blocos, bloco(X, _, _, _)), !.
+
+% Verdadeiro se o bloco no canto inferior direito de Blocos é adequado
+% para uma matriz bi-dimensional.
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(L, C, Blocos),
+    P #= (L * C - 1),
+    Esquerda #= P - 1,
+    Acima #= P - C,
+    nth0(P, Blocos, bloco(X, _, _, Y)),
+    nth0(Esquerda, Blocos, bloco(_, Y, _, _)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)), !.
+
+% Verdadeiro se o bloco no canto inferior esquerdo de Blocos é adequado
+% para uma matriz bi-dimensional.
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(L, C, Blocos),
+    P #= (L * C - L),
+    Direita #= P + 1,
+    Acima #= P - C,
+    nth0(P, Blocos, bloco(X, Y, _, _)),
+    nth0(Direita, Blocos, bloco(_, _, _, Y)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)), !.
+
+% Verdadeiro se um bloco qualquer na primeira linha é adequado
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(_, C, Blocos),
+    P #< C - 1, P #> 0,
+    Abaixo #= P + C,
+    Esquerda #= P - 1,
+    Direita #= P + 1,
+    nth0(P, Blocos, bloco(_, X, Y, Z)),
+    nth0(Abaixo, Blocos, bloco(Y, _, _, _)),
+    nth0(Esquerda, Blocos, bloco(_, Z, _, _)),
+    nth0(Direita, Blocos, bloco(_, _, _, X)), !.
+
+% Verdadeiro se um bloco qualquer na última linha é adequado
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(L, C, Blocos),
+    P #< (L * C - 1), P #> (L * C - L),
+    Acima #= P - C,
+    Esquerda #= P - 1,
+    Direita #= P + 1,
+    nth0(P, Blocos, bloco(X, Y, _, Z)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)),
+    nth0(Esquerda, Blocos, bloco(_, Z, _, _)),
+    nth0(Direita, Blocos, bloco(_, _, _, Y)), !.
+
+% Verdadeiro se um bloco qualquer na primeira coluna é adequado
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(L, C, Blocos),
+    P mod C #= 0, P #\= 0, P #\= (L * C - L),
+    Acima #= P - C,
+    Abaixo #= P + C,
+    Direita #= P + 1,
+    nth0(P, Blocos, bloco(X, Y, Z, _)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)),
+    nth0(Abaixo, Blocos, bloco(Z, _, _, _)),
+    nth0(Direita, Blocos, bloco(_, _, _, Y)), !.
+
+% Verdadeiro se um bloco qualquer na última coluna é adequado
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(L, C, Blocos),
+    (P + 1) mod C #= 0, P #\= C - 1, P #\= (L * C - 1),
+    Acima #= P - C,
+    Abaixo #= P + C,
+    Esquerda #= P - 1,
+    nth0(P, Blocos, bloco(X, _, Y, Z)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)),
+    nth0(Abaixo, Blocos, bloco(Y, _, _, _)),
+    nth0(Esquerda, Blocos, bloco(_, Z, _, _)), !.
+
+% Verdadeiro se um bloco qualquer é adequado
+bloco_adequado(Jogo, P) :-
+    Jogo = jogo(_, C, Blocos),
+    Acima #= P - C,
+    Abaixo #= P + C,
+    Esquerda #= P - 1,
+    Direita #= P + 1,
+    nth0(P, Blocos, bloco(X, Y, Z, A)),
+    nth0(Acima, Blocos, bloco(_, _, X, _)),
+    nth0(Abaixo, Blocos, bloco(Z, _, _, _)),
+    nth0(Esquerda, Blocos, bloco(_, A, _, _)),
+    nth0(Direita, Blocos, bloco(_, _, _, Y)).
