@@ -31,7 +31,7 @@
 % Dizemos que um bloco está em posição adequada se os valores das bordas
 % do bloco coincidirem corretamente com os blocos adjacentes na matriz do jogo.
 % As bordas de um bloco são representadas pelos quatro argumentos da estrutura 
-% bloco/4, são respectivamente essas:
+% bloco/4, que são respectivamente essas:
 % 
 % 1- Canto Superior Esquerdo (P = 0)
 %   A borda superior do bloco deve coincidir com a borda inferior do bloco abaixo.
