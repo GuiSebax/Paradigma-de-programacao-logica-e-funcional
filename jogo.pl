@@ -85,7 +85,7 @@ jogo_solucao(JogoInicial, JogoFinal) :-
 
 :- begin_tests(pequeno).
 
-test(j1x1, [nondet, Final = Blocos]) :-
+test(j1x1, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(3, 6, 7, 5)
     ],
@@ -93,7 +93,7 @@ test(j1x1, [nondet, Final = Blocos]) :-
     jogo_solucao(jogo(1, 1, Inicial), jogo(1, 1, Final)).
 
 
-test(j2x2, [nondet, Final = Blocos]) :-
+test(j2x2, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(3, 4, 7, 9),
         bloco(6, 9, 5, 4),
@@ -103,7 +103,7 @@ test(j2x2, [nondet, Final = Blocos]) :-
     reverse(Blocos, Inicial),
     jogo_solucao(jogo(2, 2, Inicial), jogo(2, 2, Final)).
 
-test(j3x3, [nondet, Final = Blocos]) :-
+test(j3x3, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(7, 3, 4, 9),
         bloco(3, 4, 8, 3),
@@ -123,7 +123,7 @@ test(j3x3, [nondet, Final = Blocos]) :-
 
 :- begin_tests(medio).
 
-test(j4x4, [nondet, Final = Blocos]) :-
+test(j4x4, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(7, 7, 4, 8),
         bloco(3, 0, 2, 7),
@@ -145,7 +145,7 @@ test(j4x4, [nondet, Final = Blocos]) :-
     reverse(Blocos, Inicial),
     jogo_solucao(jogo(4, 4, Inicial), jogo(4, 4, Final)).
 
-test(j5x5, [nondet, Final = Blocos]) :-
+test(j5x5, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(1, 6, 7, 5),
         bloco(4, 0, 0, 6),
@@ -176,7 +176,7 @@ test(j5x5, [nondet, Final = Blocos]) :-
     reverse(Blocos, Inicial),
     jogo_solucao(jogo(5, 5, Inicial), jogo(5, 5, Final)).
 
-test(j6x6, [nondet, Final = Blocos]) :-
+test(j6x6, [nondet, Final == Blocos]) :-
     Blocos = [
         bloco(3, 0, 2, 4),
         bloco(9, 5, 5, 0),
@@ -223,7 +223,7 @@ test(j6x6, [nondet, Final = Blocos]) :-
 
 :- begin_tests(grande).
 
-test(j7x7, [nondet, Blocos = Final]) :-
+test(j7x7, [nondet, Blocos == Final]) :-
     Blocos = [
         bloco(4, 1, 0, 8),
         bloco(7, 8, 1, 1),
@@ -356,7 +356,6 @@ test(bloco_adequado_canto_direito_superior) :-
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(3,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),3).
 
-
 test(bloco_adequado_canto_esquerdo_inferior) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,1,0),bloco(0,0,0,0),bloco(0,0,0,0),
@@ -392,7 +391,6 @@ test(bloco_inadequado_canto_esquerdo_superior, [fail]) :-
                              bloco(3,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),1).
 
-
 test(bloco_inadequado_canto_direito_inferior, [fail]) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
@@ -408,11 +406,15 @@ test(bloco_adequado_meio_primeira_linha, [fail]) :-
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0),
                              bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),2).
 
-
 test(bloco_inadequado_meio_primeira_coluna, [fail]) :-
     bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(1,2,3,4),bloco(0,0,0,0),
                              bloco(1,2,3,4),bloco(0,0,0,2),bloco(0,0,0,0),
                              bloco(3,0,0,0),bloco(0,0,0,0),bloco(0,0,0,0)]),2).
+
+test(bloco_inadequado_meio_ultima_coluna, [fail]) :-
+    bloco_adequado(jogo(3,3,[bloco(0,0,0,0),bloco(0,0,0,0),bloco(0,0,1,0),
+                             bloco(0,0,0,0),bloco(0,0,0,0),bloco(1,2,3,4),
+                             bloco(0,0,0,0),bloco(0,1,2,3),bloco(3,0,0,0)]),8).
 
 :- end_tests(bloco_adequado).
 
