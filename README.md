@@ -23,15 +23,21 @@ descreve o jogo em que o Sao-Paulo era anfitrião e marcou 3 gols e o Flamengo e
 Supondo que a lista de entrada seja:
 
 (list "Sao-Paulo 1 Atletico-MG 2"
+
 "Flamengo 2 Palmeiras 1"
+
 "Palmeiras 0 Sao-Paulo 0"
+
 "Atletico-MG 1 Flamengo 2")
 
 O programa produz a seguinte lista de strings (uma string por linha) de saída
 
 (list "Flamengo 6 2 2"
+
 "Atletico-MG 3 1 0"
+
 "Palmeiras 1 0 -1"
+
 "Sao-Paulo 1 0 -1")
 
 Onde depois do nome do time aparece o número de pontos, o número de vitórias e o saldo de gols.
