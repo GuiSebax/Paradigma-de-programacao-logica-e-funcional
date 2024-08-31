@@ -51,11 +51,11 @@ tem um número em cada borda. O objetivo é colocar cada bloco em uma posição 
 está em uma posição apropriada se os blocos adjacentes (acima, a direita, abaixo e a esquerda) tem o mesmo
 valor nas bordas adjacentes. Por exemplo, a figura abaixo mostra um jogo inicial com 3 linhas e 3 colunas
 
-[Quebra_Cabeca/imagem12.png]()
+![Imagem 1](Quebra_Cabeca/imagem12.png)
 
 O jogador deve organizar os blocos de maneira que eles fiquem em posições apropriadas, como por exemplo
 
-[Quebra_Cabeca/imagem2.png]()
+![Imagem 2](Quebra_Cabeca/imagem2.png)
 
 O objetivo do trabalho foi projetar um predicado **jogo_solucao(+Jogo, ?Solucao)** que é verdadeiro se **Solucao** é uma solução para o **Jogo**
 
